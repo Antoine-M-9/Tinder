@@ -26,11 +26,14 @@ const AuthModal = ({ setShowModal, isSignUp }) => {
 
       const response = await axios.post(`http://localhost:8000/${isSignUp ? 'signup' : 'login'}`, {email, password});
 
+      setCookie('UserId', response.data.userId)
       setCookie('AuthToken', response.data.token);
 
       const success = response.status == 201
       if (success && isSignUp) navigate('/onboarding'); // permet de configurer son compte 
       if (success && !isSignUp) navigate('/dashboard'); // s'il à déjà un compte pas besoin de le configurer
+
+      window.location.reload();
 
     } catch (error) {
       console.log(error);

@@ -1,37 +1,51 @@
 import React, { useState } from "react";
 import Nav from "../components/Nav";
-import { useCookies } from 'react-cookie'
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import axios from "axios";
 
 const OnBoarding = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+  const [cookies, setCookie, removeCookie] = useCookies(null);
   const [formData, setFormData] = useState({
+    user_id: cookies.UserId,
     first_name: "",
     dob_day: "",
     dob_month: "",
     dob_year: "",
     show_gender: false,
-    gender_identity: 'man',
-    gender_interest: 'woman',
-    url: '',
-    about: '',
-    matches: []
+    gender_identity: "man",
+    gender_interest: "woman",
+    url: "",
+    about: "",
+    matches: [],
+  });
 
-  })
+  let navigate = useNavigate();
 
   const handleChange = (e) => {
-    const value = e.target.value === 'checkbox' ? e.target.checked : e.target.value;
+    const value =
+      e.target.value === "checkbox" ? e.target.checked : e.target.value;
     const name = e.target.name;
+
+    console.log(formData);
 
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value
-    }))
-
-    console.log(formData)
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = () => {
-    console.log("submited");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put("http://localhost:8000/user", {
+        formData,
+      });
+      const success = response.status === 200;
+      if (success) navigate("/dashboard");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -86,8 +100,7 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="man-gender-identity"
-                name="gender-identity"
-                required={true}
+                name="gender_identity"
                 value="man"
                 onChange={handleChange}
                 checked={formData.gender_identity === "man"}
@@ -97,8 +110,7 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="woman-gender-identity"
-                name="gender-identity"
-                required={true}
+                name="gender_identity"
                 value="woman"
                 onChange={handleChange}
                 checked={formData.gender_identity === "woman"}
@@ -108,11 +120,10 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="more-gender-identity"
-                name="gender-identity"
-                required={true}
+                name="gender_identity"
                 value="more"
                 onChange={handleChange}
-                checked={formData.gender_identity ==="more"}
+                checked={formData.gender_identity === "more"}
               />
               <label htmlFor="more-gender-identity">More</label>
             </div>
@@ -130,7 +141,7 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="man-gender-interest"
-                name="gender-interest"
+                name="gender_interest"
                 required={true}
                 value="man"
                 onChange={handleChange}
@@ -141,7 +152,7 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="woman-gender-interest"
-                name="gender-interest"
+                name="gender_interest"
                 required={true}
                 value="woman"
                 onChange={handleChange}
@@ -152,7 +163,7 @@ const OnBoarding = () => {
               <input
                 type="radio"
                 id="everyone-gender-interest"
-                name="gender-interest"
+                name="gender_interest"
                 required={true}
                 value="everyone"
                 onChange={handleChange}
@@ -183,7 +194,9 @@ const OnBoarding = () => {
               required={true}
             />
             <div className="photo-container">
-              <img src={formData.url} alt="Profile Picture Preview" />
+              {formData.url && (
+                <img src={formData.url} alt="Profile Picture Preview" />
+              )}
             </div>
           </section>
         </form>
