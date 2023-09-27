@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [lastDirection, setLastDirection] = useState();
 
   const userId = cookies.UserId;
+
   const getUser = async () => {
     try {
       const response = await axios.get("http://localhost:8000/user", {
@@ -27,7 +28,6 @@ const Dashboard = () => {
       const response = await axios.get("http://localhost:8000/gendered-users", {
         params: { gender: user?.gender_interest },
       });
-      console.log('Response from server:', response)
       setGenderedUsers(response.data);
     } catch (err) {
       console.log(`Error getting gendered users:`, err);
@@ -36,14 +36,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     getUser();
-    getGenderedUsers();
-  }, [user, genderedUsers]); // Dépendances vides signifient que cet effet s'exécute une fois au montage
+    // getGenderedUsers();
+  }, []); // Dépendances vides signifient que cet effet s'exécute une fois au montage
 
-  // useEffect(() => {
-  //   if (user) {
-  //     getGenderedUsers();
-  //   }
-  // }, [user]); // Cet effet s'exécute chaque fois que 'user' change
+  useEffect(() => {
+    if (user) {
+      getGenderedUsers();
+    }
+  }, [user]); // Cet effet s'exécute chaque fois que 'user' change
 
   console.log('gendered', genderedUsers);
 
@@ -83,7 +83,7 @@ const Dashboard = () => {
               {genderedUsers?.map((genderedUser) => (
                 <TinderCard
                   className="swipe"
-                  key={genderedUser.first_name}
+                  key={genderedUser.user_id}
                   onSwipe={(dir) => swiped(dir, genderedUser.user_id)}
                   onCardLeftScreen={() => outOfFrame(genderedUser.first_name)}
                 >

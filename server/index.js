@@ -22,36 +22,38 @@ app.post("/signup", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
 
-  const generateduserId = uuidv4();
+  const generatedUserId = uuidv4();
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    client.connect();
+    await client.connect();
     const database = client.db("app-data");
     const users = database.collection("users");
     const existingUser = await users.findOne({ email });
 
     if (existingUser) {
-      return res.status(409).send("user already exist. Please login");
+      return res.status(409).send("User already exists. Please login");
     }
 
-    const sanitiziedEmail = email.toLowerCase();
+    const sanitizedEmail = email.toLowerCase();
 
     const data = {
-      user_id: generateduserId,
-      email: sanitiziedEmail,
+      user_id: generatedUserId,
+      email: sanitizedEmail,
       hashed_password: hashedPassword,
     }; // créer un objet contenant les informations de l'utilisateur à insérer dans la base de données
 
     const insertedUser = await users.insertOne(data); // insert le nouvel utilisateur dans la collection 'users' de la base de données
 
-    const token = jwt.sign(insertedUser, sanitiziedEmail, {
+    const token = jwt.sign(insertedUser, sanitizedEmail, {
       expiresIn: 60 * 24,
     }); // génère un token pour l'utilisateur
 
-    res.status(201).json({ token, userId: generateduserId });
+    res.status(201).json({ token, userId: generatedUserId });
   } catch (err) {
     console.log(err);
+  } finally {
+    await client.close()
   }
 });
 
@@ -77,9 +79,11 @@ app.post("/login", async (req, res) => {
       });
       res.status(201).json({ token, userId: user.user_id });
     }
-    res.status(400).send("Invalid Credentials");
+    res.status(400).json("Invalid Credentials");
   } catch (err) {
     console.log(err);
+  } finally {
+    await client.close()
   }
 });
 
@@ -114,7 +118,7 @@ app.get("/gendered-users", async (req, res) => {
     const users = database.collection("users");
     const query = { gender_identity: { $eq: gender } }; // ??
     const foundUsers = await users.find(query).toArray();
-    res.send(foundUsers);
+    res.json(foundUsers);
   } finally {
     await client.close();
   }
@@ -146,7 +150,7 @@ app.put("/user", async (req, res) => {
     };
 
     const insertedUser = await users.updateOne(query, updateDocument);
-    res.send(insertedUser);
+    res.json(insertedUser);
   } finally {
     await client.close();
   }
