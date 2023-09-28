@@ -6,17 +6,14 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+require('dotenv').config()
 
-const uri =
-  "mongodb+srv://new:mypassword@cluster0.exf2bb2.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.URI
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.json("Hello to my app");
-});
 
 app.post("/signup", async (req, res) => {
   const client = new MongoClient(uri);
@@ -53,7 +50,7 @@ app.post("/signup", async (req, res) => {
   } catch (err) {
     console.log(err);
   } finally {
-    await client.close()
+    await client.close();
   }
 });
 
@@ -78,14 +75,32 @@ app.post("/login", async (req, res) => {
         expiresIn: 60 * 24,
       });
       res.status(201).json({ token, userId: user.user_id });
+    } else {
+      res.status(400).json("Invalid Credentials");
     }
-    res.status(400).json("Invalid Credentials");
   } catch (err) {
     console.log(err);
   } finally {
-    await client.close()
+    await client.close();
   }
 });
+
+app.post('/message', async (req, res) => {
+  const client = new MongoClient(uri);
+  const message = req.body.message
+
+  try {
+    await client.connect();
+    const database = client.db("app-data");
+    const messages = database.collection("messages");
+    const insertedMessage = await messages.insertOne(message)
+    res.send(insertedMessage)
+  } catch (err) {
+    console.log(err)
+  } finally {
+    await client.close()
+  }
+})
 
 app.get("/user", async (req, res) => {
   const client = new MongoClient(uri);
@@ -106,11 +121,40 @@ app.get("/user", async (req, res) => {
   }
 });
 
+app.get("/users", async (req, res) => {
+  const client = new MongoClient(uri);
+  const userIds = JSON.parse(req.query.userIds);
+
+  try {
+    await client.connect();
+    const database = client.db("app-data");
+    const users = database.collection("users");
+
+    const pipeline = [
+      {
+        $match: {
+          user_id: {
+            $in: userIds,
+          },
+        },
+      },
+    ];
+    // c'ets une pipeline d'intgration MongoDB qui est utilisé pour trouver les documents correspondants dans la collection 'users'. Le pipeline contient une seule étape $match, qui filtre les documents pour ne garder que ceux dont l'id utilisateur est dans le tableau de 'userIds'
+
+    const foundUsers = await users.aggregate(pipeline).toArray();
+    // éxécute le pipeline, convertit le résultat en tableau et stocke la valeur dans la variable foundUsers
+
+    res.send(foundUsers);
+    // envoie le tableau 'foundUsers' comme réponse à la requête HTTP
+  } finally {
+    await client.close();
+    // ferme la connexion à la base de données MongoDB
+  }
+});
+
 app.get("/gendered-users", async (req, res) => {
   const client = new MongoClient(uri);
   const gender = req.query.gender; // pourquoi query ?
-
-  console.log("gender", gender);
 
   try {
     await client.connect();
@@ -119,6 +163,30 @@ app.get("/gendered-users", async (req, res) => {
     const query = { gender_identity: { $eq: gender } }; // ??
     const foundUsers = await users.find(query).toArray();
     res.json(foundUsers);
+  } finally {
+    await client.close();
+  }
+});
+
+app.get("/messages", async (req, res) => {
+  const { userId, correspondingUserId } = req.query;
+  const client = new MongoClient(uri);
+
+
+  try {
+    await client.connect();
+    const database = client.db("app-data");
+    const messages = database.collection("messages");
+
+    const query = {
+      from_userId: userId,
+      to_userId: correspondingUserId,
+    };
+
+    const foundMessages = await messages.find(query).toArray();
+    res.send(foundMessages);
+  } catch (err) {
+    console.log(err);
   } finally {
     await client.close();
   }
@@ -156,24 +224,24 @@ app.put("/user", async (req, res) => {
   }
 });
 
-app.put('/addmatch', async (req, res) => {
-  const client = new MongoClient(uri)
-  const { userId, matchedUserId } = req.body
+app.put("/addmatch", async (req, res) => {
+  const client = new MongoClient(uri);
+  const { userId, matchedUserId } = req.body;
 
   try {
     await client.connect();
-    const database = client.db('app-data');
-    const users = database.collection('users');
+    const database = client.db("app-data");
+    const users = database.collection("users");
 
-    const query = {user_id: userId}
+    const query = { user_id: userId };
     const updateDocument = {
-      $push: { matches: { user_id: matchedUserId }},
-    }
+      $push: { matches: { user_id: matchedUserId } },
+    };
     const user = await users.updateOne(query, updateDocument);
-    res.send(user)
+    res.send(user);
   } finally {
     await client.close();
   }
-})
+});
 
 app.listen(PORT, () => console.log("Server running on PORT " + PORT));

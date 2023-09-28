@@ -1,12 +1,77 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Chat from "./Chat";
 import ChatInput from "./ChatInput";
+import axios from "axios";
 
-const ChatDisplay = () => {
+const ChatDisplay = ({ user, clickedUser }) => {
+  const [usersMessages, setUsersMessages] = useState(null);
+  const [clickedUsersMessages, setClickedUserMessages] = useState(null);
+
+  const userId = user?.user_id;
+  const clickedUserId = clickedUser?.user_id;
+
+  const getUsersMessages = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/messages", {
+        params: { userId: userId, correspondingUserId: clickedUserId },
+      });
+
+      setUsersMessages(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getClickedUsersMessages = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/messages", {
+        params: { userId: clickedUserId, correspondingUserId: userId },
+      });
+
+      setClickedUserMessages(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getUsersMessages();
+    getClickedUsersMessages();
+  }, [usersMessages, clickedUsersMessages]);
+
+  const messages = [];
+
+  usersMessages?.forEach((message) => {
+    const formattedMessage = {};
+    formattedMessage["name"] = user?.first_name;
+    formattedMessage["img"] = user?.url;
+    formattedMessage["message"] = message?.message;
+    formattedMessage["timestamp"] = message?.first_name;
+    messages.push(formattedMessage);
+  });
+
+  clickedUsersMessages?.forEach((message) => {
+    const formattedMessage = {};
+    formattedMessage["name"] = clickedUser?.first_name;
+    formattedMessage["img"] = clickedUser?.url;
+    formattedMessage["message"] = message?.message;
+    formattedMessage["timestamp"] = message?.timestamp;
+    messages.push(formattedMessage);
+  });
+
+  const descendingOrderMessages = messages?.sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
   return (
     <>
-      <Chat />
-      <ChatInput />
+      <Chat descendingOrderMessages={descendingOrderMessages} />
+      <ChatInput
+        user={user}
+        clickedUser={clickedUser}
+        getUsersMessages={getUsersMessages}
+        getClickedUsersMessages={getClickedUsersMessages}
+      />
     </>
   );
 };

@@ -45,7 +45,6 @@ const Dashboard = () => {
     }
   }, [user]); // Cet effet s'exécute chaque fois que 'user' change
 
-  console.log('gendered', genderedUsers);
 
   const updateMatches = async (matchedUserId) => {
     try {
@@ -59,7 +58,6 @@ const Dashboard = () => {
     }
   }
 
-  console.log(user)
 
   const swiped = (direction, swipedUserId) => {
     if (direction === 'right') {
@@ -73,6 +71,12 @@ const Dashboard = () => {
     console.log(name + " left the screen!");
   };
 
+  const matchedUserIds = user?.matches.map(({user_id}) => user_id).concat(userId)
+
+  const filteredGenderedUsers = genderedUsers?.filter(
+    genderedUser => !matchedUserIds.includes(genderedUser.user_id)
+  )
+
   return (
     <>
       {user && (
@@ -80,7 +84,7 @@ const Dashboard = () => {
           <ChatContainer user={user} />
           <div className="swipe-container">
             <div className="card-container">
-              {genderedUsers?.map((genderedUser) => (
+              {filteredGenderedUsers?.map((genderedUser) => (
                 <TinderCard
                   className="swipe"
                   key={genderedUser.user_id}

@@ -27,7 +27,6 @@ const OnBoarding = () => {
       e.target.value === "checkbox" ? e.target.checked : e.target.value;
     const name = e.target.name;
 
-    console.log(formData);
 
     setFormData((prevState) => ({
       ...prevState,
