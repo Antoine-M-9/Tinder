@@ -8,7 +8,7 @@ const Home = () => {
   const [isSignUp, setIsSignUp] = useState(true);
   const [cookies, setCookie, removeCookie] = useCookies(['user'])
 
-  const authToken = cookies.authToken
+  const authToken = cookies.AuthToken
 
 
   const handleClick = () => {

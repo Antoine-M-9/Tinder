@@ -26,13 +26,13 @@ export const MatchesDisplay = ({ matches, setClickedUser }) => {
     getMatches();
   }, [matches]);
 
-  const filteredMatchesProfiles = matchedProfiles?.filter((matchedProfile) =>
+  const filteredMatchedProfiles = matchedProfiles?.filter((matchedProfile) =>
     matchedProfile.matches.filter((profile) => profile.user_id == userId).length > 0
   );
 
   return (
     <div className="matches-display">
-      {filteredMatchesProfiles?.map((match) => (
+      {filteredMatchedProfiles?.map((match) => (
         <div
           key={match.user_id}
           className="match-card"

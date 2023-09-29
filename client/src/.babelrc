@@ -1,0 +1,5 @@
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react"]
+}
+
+// Ce preset indique à Babel comment transformer la syntaxe JSX en Javascript valide
