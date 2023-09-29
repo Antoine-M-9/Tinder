@@ -6,10 +6,9 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-require('dotenv').config()
+require("dotenv").config();
 
-const uri = process.env.URI
-
+const uri = process.env.URI;
 
 const app = express();
 app.use(cors());
@@ -85,22 +84,22 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post('/message', async (req, res) => {
+app.post("/message", async (req, res) => {
   const client = new MongoClient(uri);
-  const message = req.body.message
+  const message = req.body.message;
 
   try {
     await client.connect();
     const database = client.db("app-data");
     const messages = database.collection("messages");
-    const insertedMessage = await messages.insertOne(message)
-    res.send(insertedMessage)
+    const insertedMessage = await messages.insertOne(message);
+    res.send(insertedMessage);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   } finally {
-    await client.close()
+    await client.close();
   }
-})
+});
 
 app.get("/user", async (req, res) => {
   const client = new MongoClient(uri);
@@ -172,7 +171,6 @@ app.get("/messages", async (req, res) => {
   const { userId, correspondingUserId } = req.query;
   const client = new MongoClient(uri);
 
-
   try {
     await client.connect();
     const database = client.db("app-data");
@@ -233,12 +231,20 @@ app.put("/addmatch", async (req, res) => {
     const database = client.db("app-data");
     const users = database.collection("users");
 
+    const user = await users.findOne({
+      user_id: userId,
+      "matches.user_id": matchedUserId,
+    });
+    if (user) {
+      return res.status(400).send("Match already exists");
+    }
+    
     const query = { user_id: userId };
     const updateDocument = {
       $push: { matches: { user_id: matchedUserId } },
     };
-    const user = await users.updateOne(query, updateDocument);
-    res.send(user);
+    const result = await users.updateOne(query, updateDocument);
+    res.json(result);
   } finally {
     await client.close();
   }

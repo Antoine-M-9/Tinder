@@ -6,22 +6,14 @@ import axios from "axios";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
   const [cookies, setCookie, removeCookie] = useCookies(["user"]);
-  const [genderedUsers, setGenderedUsers] = useState(null);
+  const [genderedUsers, setGenderedUsers] = useState([]);
   const [lastDirection, setLastDirection] = useState();
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [lastSwipedUserId, setLastSwipedUserId] = useState(null);
 
   const userId = cookies.UserId;
-
-  const getUser = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/user", {
-        params: { userId },
-      });
-      setUser(response.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   const getGenderedUsers = async () => {
     try {
@@ -31,54 +23,99 @@ const Dashboard = () => {
       setGenderedUsers(response.data);
     } catch (err) {
       console.log(`Error getting gendered users:`, err);
+      setError(
+        "Une erreur est survenue lors de la récupération des utilisateurs."
+      );
     }
   };
 
   useEffect(() => {
-    getUser();
-    // getGenderedUsers();
-  }, []); // Dépendances vides signifient que cet effet s'exécute une fois au montage
+    let isCancelled = false;
+
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/user", {
+          params: { userId },
+        });
+        if (!isCancelled) {
+          setUser(response.data);
+        }
+      } catch (err) {
+        console.log(err);
+        if (!isCancelled)
+          setError(
+            "Une erreur est survenue lors de la récupération des données utilisateur."
+          );
+      }
+    };
+
+    fetchUser();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
       getGenderedUsers();
     }
-  }, [user]); // Cet effet s'exécute chaque fois que 'user' change
-
+  }, [user]);
 
   const updateMatches = async (matchedUserId) => {
+    console.log("Sending request");
     try {
-      await axios.put('http://localhost:8000/addmatch', {
+      const response = await axios.put("http://localhost:8000/addmatch", {
         userId,
-        matchedUserId
-      })
-      getUser()
+        matchedUserId,
+      });
+      console.log("Request completed", response);
+      setUser((prevUser) => ({
+        ...prevUser,
+        matches: [...prevUser.matches, { user_id: matchedUserId }],
+      }));
     } catch (err) {
-      console.log(err)
+      console.log(err);
+      setError("Une erreur est survenue lors de la mise à jour des matches.");
     }
-  }
+  };
 
+  const swiped = async (direction, swipedUserId) => {
+    if (isSwiping || swipedUserId === lastSwipedUserId) {
+      console.log("Swipe in progress or duplicate swipe, returning");
+      return;
+    }
 
-  const swiped = (direction, swipedUserId) => {
-    if (direction === 'right') {
-      updateMatches(swipedUserId)
+    setIsSwiping(true);
+    setLastSwipedUserId(swipedUserId);
+
+    if (direction === "right") {
+      await updateMatches(swipedUserId);
     }
 
     setLastDirection(direction);
+
+    // Ajoutez un délai avant de réinitialiser isSwiping
+    setTimeout(() => setIsSwiping(false), 2000);
   };
 
   const outOfFrame = (name) => {
     console.log(name + " left the screen!");
   };
 
-  const matchedUserIds = user?.matches.map(({user_id}) => user_id).concat(userId)
+  const matchedUserIds =
+    user && user.matches
+      ? user.matches.map(({ user_id }) => user_id).concat(userId)
+      : [];
 
   const filteredGenderedUsers = genderedUsers?.filter(
-    genderedUser => !matchedUserIds.includes(genderedUser.user_id)
-  )
+    (genderedUser) => !matchedUserIds.includes(genderedUser.user_id)
+  );
+
 
   return (
     <>
+      {error && <div>{error}</div>}
       {user && (
         <div className="dashboard">
           <ChatContainer user={user} />
