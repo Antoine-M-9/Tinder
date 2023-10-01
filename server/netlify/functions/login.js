@@ -30,4 +30,3 @@ handler.post("/login", async (req, res) => {
     await client.close();
   }
 });
-

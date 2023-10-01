@@ -9,10 +9,13 @@ require("dotenv").config();
 const uri = process.env.URI;
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://peppy-sable-43e859.netlify.app", // Remplacez ceci par l'URL de votre client
+    allowedHeaders: ["Content-Type"],
+  })
+);
 app.use(express.json());
-
-// Ajoutez le middleware CORS ici
 
 module.exports = {
   handler: serverless(app),
