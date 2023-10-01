@@ -35,7 +35,7 @@ const Dashboard = () => {
 
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/user", {
+        const response = await axios.get("http://localhost:8000/getUser", {
           params: { userId }, headers: { 'Authorization': `Bearer ${authToken}`}
         });
         if (!isCancelled) {
