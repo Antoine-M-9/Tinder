@@ -1,9 +1,6 @@
-const express = require("express");
-const serverless = require("serverless-http");
-const app = express();
+const { handler } = require("../../app");
 
-
-app.put("/addmatch", async (req, res) => {
+handler.put("/addmatch", async (req, res) => {
   const client = new MongoClient(uri);
   const { userId, matchedUserId } = req.body;
 

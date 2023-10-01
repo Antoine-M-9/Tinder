@@ -2,8 +2,9 @@ const express = require("express");
 const serverless = require("serverless-http");
 const app = express();
 
+const { handler } = require("../../app");
 
-app.put("/user", async (req, res) => {
+handler.put("/user", async (req, res) => {
   const client = new MongoClient(uri);
   const formData = req.body.formData;
 

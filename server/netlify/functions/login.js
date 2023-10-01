@@ -1,8 +1,6 @@
-const express = require("express");
-const serverless = require("serverless-http");
-const app = express();
+const { handler } = require("../../app");
 
-app.post("/login", async (req, res) => {
+handler.post("/login", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
 

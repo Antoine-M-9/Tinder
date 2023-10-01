@@ -1,8 +1,6 @@
-const express = require("express");
-const serverless = require("serverless-http");
-const app = express();
+const { handler } = require("../../app");
 
-app.get("/user", authenticateToken, async (req, res) => {
+handler.get("/user", authenticateToken, async (req, res) => {
   const client = new MongoClient(uri);
   const userId = req.query.userId;
 

@@ -1,9 +1,6 @@
-const express = require("express");
-const serverless = require("serverless-http");
-const app = express();
+const { handler } = require("../../app");
 
-
-app.get("/users", async (req, res) => {
+handler.get("/users", async (req, res) => {
   const client = new MongoClient(uri);
   const userIds = JSON.parse(req.query.userIds);
 
