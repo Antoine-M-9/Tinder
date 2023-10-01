@@ -1,4 +1,4 @@
-const { handler } = require("../../app");
+const { handler, MongoClient, uuidv4, jwt, bcrypt, uri } = require("../../app");
 
 handler.get("/users", async (req, res) => {
   const client = new MongoClient(uri);
