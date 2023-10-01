@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [lastSwipedUserId, setLastSwipedUserId] = useState(null);
 
   const userId = cookies.UserId;
+  const authToken = cookies.AuthToken;
 
   const getGenderedUsers = async () => {
     try {
@@ -35,7 +36,7 @@ const Dashboard = () => {
     const fetchUser = async () => {
       try {
         const response = await axios.get("http://localhost:8000/user", {
-          params: { userId },
+          params: { userId }, headers: { 'Authorization': `Bearer ${authToken}`}
         });
         if (!isCancelled) {
           setUser(response.data);

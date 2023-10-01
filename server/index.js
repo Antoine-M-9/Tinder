@@ -14,9 +14,57 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (token == null) {
+    console.log("Erreur : Aucun token fourni");
+    return res.sendStatus(401); // if there isn't any token
+  }
+
+  jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+    if (err) {
+      console.log("Erreur lors de la vérification du token :", err);
+      return res.sendStatus(403);
+    }
+    req.user = user;
+    next(); // pass the execution off to whatever request the client intended
+  });
+}
+
+app.get("/protected-route", authenticateToken, (req, res) => {
+  // now we have access to the protected route
+});
+
+async function createIndexes() {
+  const client = new MongoClient(uri);
+  try {
+    await client.connect();
+    const database = client.db("app-data");
+
+    const users = database.collection("users");
+    await users.createIndex({ user_id: 1 });
+
+    // Ajoutez ici d'autres index si nécessaire
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+}
+
+createIndexes();
+
 app.post("/signup", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
+
+  // Vérifier si l'email est valide
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).send("Invalid email");
+  }
 
   const generatedUserId = uuidv4();
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -41,7 +89,7 @@ app.post("/signup", async (req, res) => {
 
     const insertedUser = await users.insertOne(data); // insert le nouvel utilisateur dans la collection 'users' de la base de données
 
-    const token = jwt.sign(insertedUser, sanitizedEmail, {
+    const token = jwt.sign(insertedUser, process.env.SECRET_KEY, {
       expiresIn: 60 * 24,
     }); // génère un token pour l'utilisateur
 
@@ -70,7 +118,7 @@ app.post("/login", async (req, res) => {
     );
 
     if (user && correctPassword) {
-      const token = jwt.sign(user, email, {
+      const token = jwt.sign(user, process.env.SECRET_KEY, {
         expiresIn: 60 * 24,
       });
       res.status(201).json({ token, userId: user.user_id });
@@ -101,7 +149,7 @@ app.post("/message", async (req, res) => {
   }
 });
 
-app.get("/user", async (req, res) => {
+app.get("/user", authenticateToken, async (req, res) => {
   const client = new MongoClient(uri);
   const userId = req.query.userId;
 
@@ -217,6 +265,9 @@ app.put("/user", async (req, res) => {
 
     const insertedUser = await users.updateOne(query, updateDocument);
     res.json(insertedUser);
+  } catch (error) {
+    // Cette ligne envoie une réponse d'erreur au client avec le message d'erreur.
+    res.status(500).json({ error: error.toString() });
   } finally {
     await client.close();
   }
@@ -238,7 +289,7 @@ app.put("/addmatch", async (req, res) => {
     if (user) {
       return res.status(400).send("Match already exists");
     }
-    
+
     const query = { user_id: userId };
     const updateDocument = {
       $push: { matches: { user_id: matchedUserId } },

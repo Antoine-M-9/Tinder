@@ -12,7 +12,6 @@ export const MatchesDisplay = ({ matches, setClickedUser }) => {
     ? [...new Set(matches.map(({ user_id }) => user_id))]
     : [];
 
-    console.log(matchedUserIds)
 
   // ({user_id}) syntaxe de décomposition d'objet en js. elle extrait la propriété user_id de chaque objet du tableau.
   // -> user_id  = partie de la fonction fléchée qui spécifie ce qui doit être retourné pour chaque élément du tableau, dans ce cas elle retourne simplement la valeur user_id que nous avons extraite
@@ -45,7 +44,6 @@ export const MatchesDisplay = ({ matches, setClickedUser }) => {
     // Apply the filter
     const filterResult =
       matchedProfile.matches.filter((profile) => {
-        console.log(`profile.user_id: ${profile.user_id}, userId: ${userId}`);
         return profile.user_id == userId;
       }).length > 0;
 

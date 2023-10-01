@@ -36,7 +36,8 @@ const AuthModal = ({ setShowModal, isSignUp }) => {
 
       // Vérifiez que les cookies sont définis
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data);
+      setError(error.response.data)
     }
   };
 
@@ -94,7 +95,7 @@ const AuthModal = ({ setShowModal, isSignUp }) => {
           />
         )}
         <input className="secondary-button" type="submit" />
-        <p>{error}</p>
+        <p style={{color: "red"}}>{error}</p>
       </form>
 
       <hr />
