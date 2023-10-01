@@ -31,4 +31,3 @@ handler.post("/login", async (req, res) => {
   }
 });
 
-module.exports.handler = serverless(app);

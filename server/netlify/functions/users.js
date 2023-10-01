@@ -30,5 +30,3 @@ handler.get("/users", async (req, res) => {
     // ferme la connexion à la base de données MongoDB
   }
 });
-
-module.exports.handler = serverless(app);

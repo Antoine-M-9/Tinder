@@ -28,4 +28,3 @@ handler.put("/addmatch", async (req, res) => {
   }
 });
 
-module.exports.handler = serverless(app);

@@ -16,5 +16,3 @@ handler.post("/message", async (req, res) => {
     await client.close();
   }
 });
-
-module.exports.handler = serverless(app);

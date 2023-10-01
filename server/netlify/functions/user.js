@@ -39,4 +39,3 @@ handler.put("/user", async (req, res) => {
   }
 });
 
-module.exports.handler = serverless(app);

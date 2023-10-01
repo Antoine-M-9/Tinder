@@ -15,5 +15,3 @@ handler.get("/gendered-users", async (req, res) => {
     await client.close();
   }
 });
-
-module.exports.handler = serverless(app);
