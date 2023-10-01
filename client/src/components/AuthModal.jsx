@@ -26,7 +26,7 @@ const AuthModal = ({ setShowModal, isSignUp }) => {
         return;
       }
       const response = await axios.post(
-        `http://localhost:8000/${isSignUp ? "signup" : "login"}`,
+        `https://dreamy-dragon-d4017a.netlify.app/${isSignUp ? "signup" : "login"}`,
         { email, password }
       );
       setCookie("AuthToken", response.data.token);

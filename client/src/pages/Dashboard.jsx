@@ -18,7 +18,7 @@ const Dashboard = () => {
 
   const getGenderedUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/gendered-users", {
+      const response = await axios.get("https://dreamy-dragon-d4017a.netlify.app/gendered-users", {
         params: { gender: user?.gender_interest },
       });
       setGenderedUsers(response.data);
@@ -35,7 +35,7 @@ const Dashboard = () => {
 
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/getUser", {
+        const response = await axios.get("https://dreamy-dragon-d4017a.netlify.app/getUser", {
           params: { userId }, headers: { 'Authorization': `Bearer ${authToken}`}
         });
         if (!isCancelled) {

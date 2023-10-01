@@ -12,7 +12,7 @@ const ChatDisplay = ({ user, clickedUser }) => {
 
   const getUsersMessages = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/messages", {
+      const response = await axios.get("https://dreamy-dragon-d4017a.netlify.app/messages", {
         params: { userId: userId, correspondingUserId: clickedUserId },
       });
 
@@ -24,7 +24,7 @@ const ChatDisplay = ({ user, clickedUser }) => {
 
   const getClickedUsersMessages = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/messages", {
+      const response = await axios.get("https://dreamy-dragon-d4017a.netlify.app/messages", {
         params: { userId: clickedUserId, correspondingUserId: userId },
       });
 

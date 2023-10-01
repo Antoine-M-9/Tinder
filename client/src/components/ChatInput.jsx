@@ -16,7 +16,7 @@ const ChatInput = ({user, clickedUser, getUsersMessages, getClickedUsersMessages
     }
 
     try {
-      await axios.post('http://localhost:8000/message', { message })
+      await axios.post('https://dreamy-dragon-d4017a.netlify.app/message', { message })
       getUsersMessages()
       getClickedUsersMessages()
       setTextArea("")
