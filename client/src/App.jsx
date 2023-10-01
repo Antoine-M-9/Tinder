@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import OnBoarding from "./pages/Onboarding";
 import Home from "./pages/Home";
 import { useCookies } from "react-cookie";
+import Dashboard from "./pages/Dashboard";
+import OnBoarding from "./pages/OnBoarding";
 
 const App = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+  const [cookies, setCookie, removeCookie] = useCookies(["user"]);
 
   const authToken = cookies.AuthToken;
 
